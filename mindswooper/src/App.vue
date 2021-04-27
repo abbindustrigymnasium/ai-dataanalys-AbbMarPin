@@ -38,20 +38,23 @@
     </v-app-bar>
 
     <v-main>
-      <HelloWorld/>
+      <v-card class="mx-auto" max-width="400">
+        <minesweepergame></minesweepergame>
+        
+      </v-card>
     </v-main>
   </v-app>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+import minesweepergame from './components/MinesweeperGame.vue';
 
 export default Vue.extend({
   name: 'App',
 
   components: {
-    HelloWorld,
+    minesweepergame,
   },
 
   data: () => ({
