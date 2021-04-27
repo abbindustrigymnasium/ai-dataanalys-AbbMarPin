@@ -58,7 +58,7 @@ export default {
     }
 
     &-select {
-      background: #87e7476c;
+      background: #87e74798;
     }
 
     &-cheat {

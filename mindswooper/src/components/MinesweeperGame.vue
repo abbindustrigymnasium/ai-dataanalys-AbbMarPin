@@ -18,10 +18,11 @@
       ></v-switch>
     </div>
     <v-btn color="success" class="ma-2" @click="select()">select random</v-btn>
+    <v-btn color="success" class="ma-2" @click="selectNext = true">select</v-btn>
     <v-btn
       color="success"
       class="ma-2"
-      @click="cheatOnce(grid.find((cell) => !cell.selected))"
+      @click="cheatOnce(grid.find((cell) => cell.selected))"
       >cheatOnce</v-btn
     >
 
@@ -53,6 +54,7 @@ interface cell {
   neighborhood: number[] | null;
   cheat: Boolean;
   selected: Boolean;
+  Index: number;
 }
 
 export default Vue.extend({
@@ -82,6 +84,7 @@ export default Vue.extend({
       won: false,
       grid: [] as cell[],
       cheat: false,
+      selectNext: false,
     };
   },
   mounted() {
@@ -97,22 +100,27 @@ export default Vue.extend({
   methods: {
     select() {
       let good = false;
-      let i;
+      let i: number;
 
       while (!good) {
-        i = Math.floor(Math.random() * this.grid.length);
-        let cell = this.grid[i];
-        this.checkNeighborhood(cell, true);
-        if (!cell.neighborhood) return;
+        // i = Math.floor(Math.random() * this.grid.length);
+        const goodPlaces = this.grid.filter((cell) => cell.bombCount != 0);
+        i = Math.floor(Math.random() * goodPlaces.length);
+        let cell = goodPlaces[i];
+        i = cell.Index;
+        console.log("checking:", cell, i, goodPlaces);
+        this.checkNeighborhood(cell, false);
+        if (!cell.neighborhood) continue;
 
-        cell.neighborhood.forEach((i) => {
-          let neighbor = this.grid[i];
+        cell.neighborhood.forEach((ii) => {
+          let neighbor = this.grid[ii];
           if (!neighbor.isOpen) {
             good = true;
             this.grid.forEach((cell: cell) => {
               cell.selected = false;
             });
             this.grid[i].selected = true;
+            console.log("Selecting:", this.grid[i], i);
             return;
           }
         });
@@ -125,18 +133,29 @@ export default Vue.extend({
       });
     },
     cheatOnce(cell: cell) {
-      this.checkNeighborhood(cell, true);
-
+      this.checkNeighborhood(cell, false);
+      console.log("cheat cell:", cell);
       if (!cell.neighborhood) return;
-      let totOpen = 0;
+      let totClosed = 0;
       cell.neighborhood.forEach((i) => {
         let neighbor = this.grid[i];
-        if (neighbor.isOpen) {
-          totOpen++;
+        console.log("neighbor:", neighbor, neighbor.isOpen)
+        if (!neighbor.isOpen) {
+          totClosed++;
         }
       });
+      console.log("closed", totClosed, cell.bombCount);
 
-      // if (totOpen == cell.nu)
+      if (totClosed == cell.bombCount) {
+        
+        cell.neighborhood.forEach((i) => {
+          let neighbor = this.grid[i];
+          if (!neighbor.isOpen) {
+
+            this.addFlag(neighbor);
+          }
+        });
+      }
     },
     getGridStyle() {
       const { cols } = this;
@@ -160,6 +179,7 @@ export default Vue.extend({
           neighborhood: null,
           cheat: false,
           selected: false,
+          Index: i,
         });
       }
       while (bombs > 0) {
@@ -232,6 +252,17 @@ export default Vue.extend({
       }
     },
     clickCell(cell: cell, i: number, isUser: Boolean) {
+      if (isUser) {
+        console.log(cell, i);
+      }
+      if (this.selectNext){
+        this.grid.forEach((cell: cell) => {
+          cell.selected = false;
+        });
+        cell.selected = true;
+        this.selectNext = false;
+        return;
+      }
       if (this.finished) {
         return;
       }

@@ -44,7 +44,9 @@
     "parserOptions": {
       "ecmaVersion": 2020
     },
-    "ignorePatterns": ["src/components/Mine*.vue"],
+    "ignorePatterns": [
+      "src/components/Mine*.vue"
+    ],
     "rules": {}
   },
   "browserslist": [
