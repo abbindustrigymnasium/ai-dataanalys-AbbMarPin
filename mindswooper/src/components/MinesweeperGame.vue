@@ -93,15 +93,16 @@ export default Vue.extend({
       finished: false,
       won: false,
       grid: [] as cell[],
-      cheat: false,
+      cheat: true,
       selectNext: false,
       selected: [] as number[][],
-      targetX: -1,
-      targetY: -1
+      targetI: -1,
+      flagTarget: false
     };
   },
   mounted() {
     this.initGrid();
+    this.toggleCheat()
   },
   computed: {
     allBombs() {
@@ -148,8 +149,8 @@ export default Vue.extend({
 
       this.grid.forEach((cell: cell, i) => {
         if (cell.isOpen){
-          if (8-cell.openNear == cell.bombCount){
-            this.addAllOpenNear(i, 1)
+          if (cell.hiddenNeighborhood?.length == cell.bombCount){
+            this.addAllHiddenNear(i, 1)
           }
         }
       })
@@ -157,11 +158,16 @@ export default Vue.extend({
       this.grid.forEach((cell: cell, i) => {
         if (cell.isOpen){
           if (cell.bombCount == cell.flaggedNear){
-            this.addAllOpenNear(i, 1)
+            this.addAllHiddenNear(i, 0)
           }
         }
       })
+
+      // if (this.selected.length == 0){
+      //   this.pickRandom()
+      // }
       
+      console.log(this.selected)
 
 
       // let good = false;
@@ -191,13 +197,21 @@ export default Vue.extend({
       //   });
       // }
     },
-    addAllOpenNear(i: number, oneIfBomb:number): void{
+    pickRandom(){
+      let closed = this.grid.filter(cell => !cell.isOpen)
+      let i = Math.floor(Math.random()*closed.length)
+      this.clickCell(closed[i], closed[i].Index, false)
+      console.warn("Picking random cell:", closed[i])
+    },
+    addAllHiddenNear(i: number, oneIfBomb:number): void{
       if (!this.grid[i].isOpen){
         return
       }
 
-      this.getNeighborhood(this.grid[i]).forEach(i => {
-        let cell = this.grid[i]
+      this.getNeighborhood(this.grid[i]).forEach(ii => {
+        
+        let cell = this.grid[ii]
+        // console.log("going through:", i, "neighbour", ii, "Open:", cell.isOpen, "Selected", cell.selected)
         if (!cell.isOpen && !cell.selected){
           this.selected.push([i, oneIfBomb])
           cell.selected = true
@@ -212,12 +226,28 @@ export default Vue.extend({
         cell.cheat = this.cheat;
       });
     },
-    cheatOnce(cell: cell) {
+    cheatOnce() {
 
+      
+      console.log(this.selected)
 
+      let cell = this.grid[this.targetI]
 
+      if (this.flagTarget){
+        if (!cell.hasFlag){
+          this.addFlag(cell)
+        }
 
+      }
 
+      this.updateAllCells()
+
+      this.selected.forEach((e) => {
+        let temp = this.grid[e[0]]
+        if (temp.isOpen){
+          
+        }
+      })
 
 
 
@@ -289,6 +319,7 @@ export default Vue.extend({
       });
       this.won = false;
       this.bombCount = this.bombs;
+      this.toggleCheat()
     },
     haveWeWon() {
       if (this.finished) {
