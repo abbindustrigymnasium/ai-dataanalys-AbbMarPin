@@ -21,8 +21,11 @@ export default {
   methods: {
     getClass() {
       const { cell } = this;
-      if (cell.selected){
+      if (cell.selected == 1){
         return 'minesweeper-select';
+      }
+      if (cell.selected == 2){
+        return 'minesweeper-select-bomb';
       }
       if (!cell.isOpen && cell.hasBomb && cell.cheat){
         return 'minesweeper-cheat';
@@ -60,6 +63,10 @@ export default {
     &-select {
       background: #87e74798;
     }
+    &-select-bomb {
+      background: #e7e44798;
+    }
+
 
     &-cheat {
       background: #97483f65;
