@@ -1,6 +1,6 @@
 # mindswooper
 
-<img src=bilder/swooper.png>
+<img src=bilder/swooper.png width=400>
 
 ## Mind swooper 
 är en minesweeper spel med lite ai funktioner.
@@ -13,6 +13,7 @@ Och senare applicera ai för svårare strategier som 50/50 tilfällen med flera 
 I koden finns bara den första delen, men möjlighet för andra också.
 
 
+Man kan också klicka på knappen "EZ game" för att slumpmässnigt generera ett bräde som man lösas utan svåra strategier
 
 ## Starta
 ```

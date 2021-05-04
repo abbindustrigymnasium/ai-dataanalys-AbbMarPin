@@ -17,21 +17,31 @@
         v-model="cheat"
       ></v-switch>
     </div>
-    <v-btn color="success" class="ma-2" @click="select()"
+    <!-- <v-btn color="success" class="ma-2" @click="select()"
       >select next targets</v-btn
-    >
-    <v-btn color="success" class="ma-2" @click="selectNext = true"
-      >select one cell</v-btn
-    >
+    > -->
+    <v-row align="center">
+      <v-col class="d-flex" cols="12" sm="6">
+        <v-btn color="success" class="ma-2" @click="EzGame()">EZGame</v-btn>
+      </v-col>
+      <v-col>
+        <v-select
+          :items="[0, 1, 10, 100]"
+          v-model="delay"
+          label="Delay"
+        ></v-select>
+      </v-col>
+    </v-row>
+
     <v-btn
       color="success"
       class="ma-2"
       @click="cheatOnce(grid.find((cell) => cell.selected))"
       >cheatOnce</v-btn
     >
-    <v-btn color="success" class="ma-2" @click="updateAllCells()"
+    <!-- <v-btn color="success" class="ma-2" @click="updateAllCells()"
       >update all</v-btn
-    >
+    > -->
 
     <div class="minesweeper-grid" :style="getGridStyle()">
       <minesweeper-cell
@@ -80,11 +90,11 @@ export default Vue.extend({
     },
     rows: {
       type: Number,
-      default: 9,
+      default: 30,
     },
     bombs: {
       type: Number,
-      default: 10,
+      default: 55,
     },
   },
   data() {
@@ -98,6 +108,7 @@ export default Vue.extend({
       selected: [] as number[][],
       targetI: -1,
       flagTarget: false,
+      delay: 0,
     };
   },
   mounted() {
@@ -112,7 +123,61 @@ export default Vue.extend({
     },
   },
   methods: {
+    wait(ms: number) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+    async EzGame() {
+      let orig: cell[] = [];
+      while (!this.won) {
+        // find good game
+        console.log("Starting...");
+        this.initGrid();
+        orig = [];
+        let moves = 0;
+        this.finished = false;
+        // debugger
+
+        while (!this.finished) {
+          // find good moves
+          if (this.checkLost()) break;
+          this.cheatOnce();
+          if (this.selected.length && !orig.length) {
+            this.grid.forEach((cell: cell) => {
+              orig.push({
+                hasBomb: cell.hasBomb,
+                bombCount: cell.bombCount,
+                isOpen: cell.isOpen,
+                openNear: cell.openNear,
+                hasFlag: cell.hasFlag,
+                flaggedNear: cell.flaggedNear,
+                neighborhood: cell.neighborhood,
+                cheat: cell.cheat,
+                selected: cell.selected,
+                hiddenNeighborhood: cell.hiddenNeighborhood,
+                Index: cell.Index,
+              });
+            });
+          }
+          moves++;
+          if (this.delay) await this.wait(this.delay);
+        }
+        console.log("Got Finished game in", moves);
+      }
+
+      console.log("Finished");
+      console.log("Setting board");
+      // console.log(orig, this.grid, orig == this.grid)
+      this.grid = orig;
+
+      // ------------------------------------------------
+      // Reset
+      this.grid.forEach((cell: cell) => (cell.selected = 0));
+      this.finished = false;
+      this.won = false;
+    },
     updateAllCells() {
+      // console.log(this.selected, this.targetI);
+
       this.grid.forEach((cell: cell, i) => {
         let n = 0;
         this.getNeighborhood(cell).forEach((i) => {
@@ -159,9 +224,9 @@ export default Vue.extend({
         }
       });
 
-      // if (this.selected.length == 0){
-      //   this.pickRandom()
-      // }
+      if (this.selected.length == 0) {
+        this.pickRandom();
+      }
 
       // console.log(this.selected);
 
@@ -207,7 +272,7 @@ export default Vue.extend({
         let cell = this.grid[ii];
         // console.log("going through:", i, "neighbour", ii, "Open:", cell.isOpen, "Selected", cell.selected)
         if (!cell.isOpen && !cell.selected) {
-          this.selected.push([i, oneIfBomb]);
+          this.selected.push([ii, oneIfBomb]);
           cell.selected = 1 + oneIfBomb;
         }
       });
@@ -219,41 +284,45 @@ export default Vue.extend({
       });
     },
     cheatOnce() {
-      console.log("First", this.selected, this.targetI);
+      if (this.finished) {
+        console.warn("Alredy Finished!");
+        return -1;
+      }
+      // console.log("First", this.selected, this.targetI);
+      // -1 = no target
 
       if (this.targetI != -1) {
         let cell: cell = this.grid[this.targetI];
-        console.log("Goin for", cell, this.flagTarget)
+        // console.log("Goin for", cell, this.flagTarget);
 
         if (this.flagTarget) {
           if (!cell.hasFlag) {
-
-            console.log("addFlag", cell)
+            // console.log("addFlag", cell);
             this.addFlag(cell);
           }
         } else {
           if (cell.hasFlag) {
             console.error("Flag bad", cell);
           } else {
-            console.log("clickCell", cell)
-            this.clickCell(cell, cell.Index, true);
+            // console.log("clickCell", cell);
+            this.clickCell(cell, cell.Index, false);
           }
         }
       }
 
       this.updateAllCells();
 
-      console.log("Last", this.selected, this.targetI);
       this.selected = this.selected.filter(
-        (i: number[]) => this.grid[i[0]].isOpen
+        (i: number[]) => !this.grid[i[0]].isOpen && !this.grid[i[0]].hasFlag
       );
 
       if (this.selected.length) {
         this.targetI = this.selected[0][0];
-        this.flagTarget = !this.selected[0][1];
+        this.flagTarget = Boolean(this.selected[0][1]);
       } else {
         this.select();
       }
+      // console.log("Last", this.selected, this.targetI);
 
       // this.setNeighborhood(cell, cell.Index);
       // console.log("cheat cell:", cell);
@@ -480,6 +549,11 @@ export default Vue.extend({
         return false;
       }
       return i + (y * cols + x);
+    },
+    checkLost() {
+      return Boolean(
+        this.grid.some((cell: cell) => cell.isOpen && cell.hasBomb)
+      );
     },
   },
   watch: {
