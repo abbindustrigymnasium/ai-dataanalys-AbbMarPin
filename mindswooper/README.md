@@ -13,7 +13,7 @@ Senare kan man applicera ai för svårare strategier som 50/50 tilfällen med fl
 <img src=bilder/exempel.png width=400>
 
 Tillexempel i vänstra hörnet på bilden vet man inte vart bomberna är om man går från vänster, 
-men man kan veta att det definitift inte är den tredje på grund av första och andra.
+men man kan veta att det definitift inte är en bomb i den tredje cellen på grund av första och andra.
 
 I koden finns bara den första delen kodad, men möjlighet för expandering av den andra delen också.
 
