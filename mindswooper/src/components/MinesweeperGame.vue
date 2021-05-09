@@ -109,6 +109,7 @@ export default Vue.extend({
       targetI: -1,
       flagTarget: false,
       delay: 0,
+      early: true
     };
   },
   mounted() {
@@ -224,7 +225,7 @@ export default Vue.extend({
         }
       });
 
-      if (this.selected.length == 0) {
+      if (this.selected.length == 0 && this.early) {
         this.pickRandom();
       }
 
@@ -395,6 +396,7 @@ export default Vue.extend({
       this.won = false;
       this.bombCount = this.bombs;
       this.toggleCheat();
+      this.early = true
     },
     haveWeWon() {
       if (this.finished) {
