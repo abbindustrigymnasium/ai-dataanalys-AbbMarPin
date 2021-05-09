@@ -8,7 +8,7 @@ Tanken var att först göra några enkla regler för datorn som tex
 
 `om antalet gömda celler nära är lika med nummret på en cell ska man flagga alla gömda celler.`
 
-Senare kan man applicera ai för svårare strategier som 50/50 tilfällen med flera bombkonfigurationer. 
+Senare kan man applicera ai för svårare strategier som 50/50 tilfällen med flera möjliga bombkonfigurationer. 
 
 <img src=bilder/exempel.png width=400>
 
