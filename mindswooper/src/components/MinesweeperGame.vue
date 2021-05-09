@@ -90,11 +90,11 @@ export default Vue.extend({
     },
     rows: {
       type: Number,
-      default: 30,
+      default: 10,
     },
     bombs: {
       type: Number,
-      default: 55,
+      default: 20,
     },
   },
   data() {
@@ -142,7 +142,7 @@ export default Vue.extend({
           // find good moves
           if (this.checkLost()) break;
           this.cheatOnce();
-          if (this.selected.length && !orig.length) {
+          if (this.selected.length && !orig.length) { // create checkpoint
             this.grid.forEach((cell: cell) => {
               orig.push({
                 hasBomb: cell.hasBomb,
